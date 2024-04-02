@@ -63,7 +63,7 @@ huggingface-cli download --resume-download kingzzm/chatglm3-6b-ggml --local-dir 
 
 :exclamation: 下载好后请将模型名字改成 `chatglm-ggml.bin ` (或者其他你想改的名字，此处仅是为了后面方便 copy 命令)
 
-如果你想要自行量化模型，参考 [:books: 模型量化](#:books: 模型量化)
+如果你想要自行量化模型，参考 <a href="#:books: 模型量化">:books: 模型量化</a>
 
 **编译**
 
