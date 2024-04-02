@@ -1,34 +1,36 @@
-# ChatGLM3-6B部署指南（AutoDL版本）
+# ChatGLM3-6B部署指北（AutoDL版本）
 
 ## 部署前言
 
 由于本人在本机的 conda 环境下部署时报 `flash attention warning`，导致推理速度极慢，怀疑是安装的 torch 版本有问题，后在 Docker 容器镜像环境下部署，却产生了不可预料的错误，Docker 进程直接被杀死。  
 
-百般尝试后发现：即使是在 4-bit 量化下， ChatGLM3-6B 模型部署仍需要 4.5GB+ 的显存，而本人的 RTX 3050 仅有 4GB 显存，且还有其它程序占用，极有可能就是导致推理速度慢的罪魁祸首，遂放弃本机部署的方案 :sob: ，转而针对 AutoDL 图形服务器租赁平台进行部署。
+~~百般尝试后发现：即使是在 4-bit 量化下， ChatGLM3-6B 模型部署仍需要 4.5GB+ 的显存，而本人的 RTX 3050 仅有 4GB 显存，且还有其它程序占用，极有可能就是导致推理速度慢的罪魁祸首，遂放弃本机部署的方案 :sob: ，转而针对 AutoDL 图形服务器租赁平台进行部署。~~
 
-## 部署指南
+后发现并成功部署 `chatglm.cpp` 量化加速部署方案，可大幅降低显存使用或直接在CPU上部署，且推理速度获得了大幅度提高。具体参考 [ChatGLM3 chatglm.cpp加速部署指北](./resource/chatglmcpp.md)
+
+## 部署指北
 
 ### 显卡选择和镜像拉取
 
 由于服务器租赁平台不同显卡的 CUDA 版本有所限制，而其 PyTorch2.1.0镜像（最低部署要求镜像） 仅支持 CUDA12.1 以上的显卡，综合考虑成本、便利和性能因素，本次选择 RTX 3090 作为本次部署的平台。（可自行选择，不做硬性要求，只需手动升级 PyTorch 版本在 2.1.0 以上即可）
 
-<img src="./image/1.png" alt="配置方案" style="width:400px;height:100%;">
+<img src="./resource/1.png" alt="配置方案" style="width:400px;height:100%;">
 
 ### SSH远程登录和配置
 
 利用AutoDL给出的登录指令和登录密码，可在Windows或其他终端上快速登录并访问云服务器上的容器终端。
 
-<img src="./image/2.png" alt="配置方案" style="width:700px;height:100%;">
+<img src="./resource/2.png" alt="配置方案" style="width:700px;height:100%;">
 
 由于我们需要用到Git仓库，所以在成功登录远程终端后，输入以下指令进行代理：
 
 ```shell
-source /etc/network_turbo
+resource /etc/network_turbo
 ```
 
 这是AutoDL官方提供的学术资源加速方法。
 
-<img src="./image/3.png" alt="配置方案" style="width:600px;height:100%;">
+<img src="./resource/3.png" alt="配置方案" style="width:600px;height:100%;">
 
 ### 项目拉取和环境搭建
 
@@ -65,7 +67,7 @@ git clone https://www.modelscope.cn/Xorbits/bge-large-zh-v1.5.git bge-large-zh-v
 ```
 :sob: 此时如果产生了如下的错误信息 :sob:
 
-<img src="./image/4.png" alt="配置方案" style="width:300px;height:100%;">
+<img src="./resource/4.png" alt="配置方案" style="width:300px;height:100%;">
 
 可执行以下命令解决（注意在执行 `git pull` 时，因为 AutoDL 的数据存储空间有限制，如果遇到了空间不够的情况，可到 `chatglm3-6b` 模型路径下将 `.git` 文件删除，此操作可释放大约 20G 的存储空间）：
 ```shell
@@ -97,7 +99,7 @@ git lfs install --force
 python3 api_server.py
 ```
 
-<img src="./image/5.png" alt="配置方案" style="width:600px;height:100%;">
+<img src="./resource/5.png" alt="配置方案" style="width:600px;height:100%;">
 
 看到以上运行日志，代表 API 服务已成功在 6006 端口拉起。
 
