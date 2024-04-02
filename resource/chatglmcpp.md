@@ -1,12 +1,12 @@
 # ChatGLM3 chatglm.cpp加速部署指北
 
-## ChatGLM.cpp介绍
-
 [![CMake](https://github.com/li-plus/chatglm.cpp/actions/workflows/cmake.yml/badge.svg)](https://github.com/li-plus/chatglm.cpp/actions/workflows/cmake.yml)
 [![Python package](https://github.com/li-plus/chatglm.cpp/actions/workflows/python-package.yml/badge.svg)](https://github.com/li-plus/chatglm.cpp/actions/workflows/python-package.yml)
 [![PyPI](https://img.shields.io/pypi/v/chatglm-cpp)](https://pypi.org/project/chatglm-cpp/)
 ![Python](https://img.shields.io/pypi/pyversions/chatglm-cpp)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+
+## ChatGLM.cpp介绍
 
 这是对一系列大型语言模型（LLMs）的C++实现，包括 [ChatGLM-6B](https://github.com/THUDM/ChatGLM-6B), [ChatGLM2-6B](https://github.com/THUDM/ChatGLM2-6B), [ChatGLM3-6B](https://github.com/THUDM/ChatGLM3) 等，用于在您的笔记本上进行实时聊天。
 
