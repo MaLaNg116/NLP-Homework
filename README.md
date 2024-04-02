@@ -20,7 +20,7 @@
 
 利用AutoDL给出的登录指令和登录密码，可在Windows或其他终端上快速登录并访问云服务器上的容器终端。
 
-<img src="./resource/2.png" alt="配置方案" style="width:700px;height:100%;">
+<img src="./resource/2.png" alt="指令密码位置" style="width:700px;height:100%;">
 
 由于我们需要用到Git仓库，所以在成功登录远程终端后，输入以下指令进行代理：
 
@@ -30,7 +30,7 @@ resource /etc/network_turbo
 
 这是AutoDL官方提供的学术资源加速方法。
 
-<img src="./resource/3.png" alt="配置方案" style="width:600px;height:100%;">
+<img src="./resource/3.png" alt="加速日志" style="width:600px;height:100%;">
 
 ### 项目拉取和环境搭建
 
@@ -67,7 +67,7 @@ git clone https://www.modelscope.cn/Xorbits/bge-large-zh-v1.5.git bge-large-zh-v
 ```
 :sob: 此时如果产生了如下的错误信息 :sob:
 
-<img src="./resource/4.png" alt="配置方案" style="width:300px;height:100%;">
+<img src="./resource/4.png" alt="错误日志" style="width:300px;height:100%;">
 
 可执行以下命令解决（注意在执行 `git pull` 时，因为 AutoDL 的数据存储空间有限制，如果遇到了空间不够的情况，可到 `chatglm3-6b` 模型路径下将 `.git` 文件删除，此操作可释放大约 20G 的存储空间）：
 ```shell
@@ -99,7 +99,7 @@ git lfs install --force
 python3 api_server.py
 ```
 
-<img src="./resource/5.png" alt="配置方案" style="width:600px;height:100%;">
+<img src="./resource/5.png" alt="运行日志" style="width:600px;height:100%;">
 
 看到以上运行日志，代表 API 服务已成功在 6006 端口拉起。
 
