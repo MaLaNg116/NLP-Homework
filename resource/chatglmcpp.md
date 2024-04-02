@@ -63,7 +63,7 @@ huggingface-cli download --resume-download kingzzm/chatglm3-6b-ggml --local-dir 
 
 :exclamation: 下载好后请将模型名字改成 `chatglm-ggml.bin ` (或者其他你想改的名字，此处仅是为了后面方便 copy 命令)
 
-如果你想要自行量化模型，参考 <a href="#:books: 模型量化">:books: 模型量化</a>
+如果你想要自行量化模型，参考 <a href="#:books:模型量化">:books:模型量化</a>
 
 **编译**
 
@@ -168,7 +168,7 @@ OPENAI_BASE_URL=http://127.0.0.1:6006/v1 python3 examples/openai_client.py --too
 使用这个API服务器作为后端，ChatGLM.cpp模型可以无缝集成到任何使用OpenAI风格API的前端中，包括 [mckaywrigley/chatbot-ui](https://github.com/mckaywrigley/chatbot-ui), [fuergaosi233/wechat-chatgpt](https://github.com/fuergaosi233/wechat-chatgpt), [Yidadaa/ChatGPT-Next-Web](https://github.com/Yidadaa/ChatGPT-Next-Web)，等等。
 
 
-### :books: 模型量化
+### :books:模型量化
 
 安装用于加载和量化Hugging Face模型的必要包：
 ```sh
