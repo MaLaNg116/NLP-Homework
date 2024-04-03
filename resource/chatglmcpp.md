@@ -52,7 +52,9 @@ git submodule update --init --recursive
 :exclamation: :exclamation: :exclamation: 如果你在拉取项目时遇到了问题，可尝试：
 + 提供更为稳定的国际网络访问体验
 + 尝试使用 SSH 代替 HTTP 拉取
++ 运行 `git config --global http.postBuffer 1048576000` 后重新拉取
 + 如果是 [Git clone fetch-pack unexpected disconnect while reading sideband packet](https://blog.csdn.net/m0_37196398/article/details/129993150) 错误，参考博客
++ 参考博客 [使用git拉取GitHub项目失败（超时）](https://zhuanlan.zhihu.com/p/509701311)
 
 **模型量化**
 
@@ -65,14 +67,34 @@ huggingface-cli download --resume-download kingzzm/chatglm3-6b-ggml --local-dir 
 
 如果你想要自行量化模型，参考 <a href="#books-模型量化">:books: 模型量化</a>
 
-**编译**
+#### **编译**
 
 用 CMake 指令编译源码：
 ```sh
 cmake -B build
 cmake --build build -j --config Release
 ```
-此编译版本为 CPU 版本，如果你需要 CUDA 加速，则需要使用 cuBLAS 加速框架：
+此编译版本为基准 CPU 版本
+
+**使用BLAS加速**
+
+集成 BLAS 库可进一步加快矩阵乘法运算速度。不过，在某些情况下，使用 BLAS 可能会导致性能下降。是否开启 BLAS 应取决于基准测试结果。
+
+**加速框架**
+
+加速框架会在 macOS 上自动启用。要禁用它，请添加 CMake 标志 `-DGGML_NO_ACCELERATE=ON` 。
+
+**OpenBLAS**
+
+OpenBLAS 可为 CPU 提供加速。添加 CMake 标志 `-DGGML_OPENBLAS=ON` 以启用它。
+```sh
+cmake -B build -DGGML_OPENBLAS=ON && cmake --build build -j
+```
+
+**cuBLAS**
+
+cuBLAS 使用英伟达™（NVIDIA®）GPU 加速 BLAS。添加 CMake 标志 -DGGML_CUBLAS=ON 以启用它。
+
 ```sh
 cmake -B build -DGGML_CUBLAS=ON && cmake --build build -j
 ```
@@ -85,6 +107,13 @@ cmake -B build -DGGML_CUBLAS=ON -DCUDA_ARCHITECTURES="70;75"    # compatible wit
 
 要找出您的GPU设备的CUDA架构，请参阅 [Your GPU Compute Capability](https://developer.nvidia.com/cuda-gpus)。
 
+**Metal**
+
+MPS（Metal Performance Shaders）允许在强大的 Apple Silicon GPU 上运行计算。添加 CMake 标志 -DGGML_METAL=ON 以启用它。
+```sh
+cmake -B build -DGGML_METAL=ON && cmake --build build -j
+```
+
 **启动**
 
 现在你可以运行以下命令和量化后的ChatGLM3-6B模型对话：
@@ -95,18 +124,39 @@ cmake -B build -DGGML_CUBLAS=ON -DCUDA_ARCHITECTURES="70;75"    # compatible wit
 
 要以交互模式运行模型，请添加 -i 标志。例如：
 ```sh
-./build/Release/bin/main -m chatglm-ggml.bin -i
+./build/bin/Release/main -m chatglm-ggml.bin -i
 ```
 在交互模式下，您的聊天历史将作为下一轮对话的上下文。
 
 运行 `./build/bin/main -h` 来探索更多选项！
 
+### 安装chatglm-cpp模块
+
+如果要运行相应的 Web Demo 和部署 API Server 服务，需要安装 `chatglm-cpp` 模块，但是如果在 Windows 下部署，大概率会发生编译错误，以下是我的解决方案。
+
+:exclamation: :exclamation: :exclamation: 如果你使用 conda 虚拟环境管理器，那么在进行以下操作时，切忌在 `Anaconda Prompt` 中进行，此操作会导致你的环境变量无法正确被读取，导致无法安装 CUDA 版本的 chatglm-cpp 模块。
+
+首先在 `CMD` 中激活你的 conda 环境（如不使用 conda 则可跳过），使用 `cd` 命令切换到 `chatglm.cpp` 项目根目录下，运行以下命令：
+```sh
+set "TRACKFILEACCESS=false"
+set "CMAKE_ARGS=-DGGML_CUBLAS=ON"
+pip install . --force-reinstall -v --no-cache
+```
+
+如果你仅使用 CPU 进行推理，那么直接运行以下命令即可
+```sh
+pip install -U . --force-reinstall -v --no-cache
+```
+
+如果你使用 Apple Silicon GPU Device，运行以下命令
+```sh
+CMAKE_ARGS="-DGGML_METAL=ON" pip install -U chatglm-cpp
+```
+
 ### API 服务
 
-支持各种API服务器以与流行的前端集成。可以通过以下命令安装额外的依赖
-```sh
-pip install chatglm-cpp[api]
-```
+支持各种API服务器以与流行的前端集成。确保你已经通过上一部分内容成功安装额外的依赖。
+
 记得添加相应的 `CMAKE_ARGS` 以启用加速。
 
 **LangChain API**
@@ -132,10 +182,21 @@ curl http://127.0.0.1:6006 -H 'Content-Type: application/json' -d '{"prompt": "�
 
 **OpenAI API**
 
-启动一个与 [OpenAI聊天补全协议](https://platform.openai.com/docs/api-reference/chat) 兼容的API服务器：
+启动一个与 [OpenAI chat completions protocol](https://platform.openai.com/docs/api-reference/chat) 兼容的API服务器：
 ```sh
 MODEL=./chatglm3-ggml.bin uvicorn chatglm_cpp.openai_api:app --host 127.0.0.1 --port 6006
 ```
+:exclamation: 在 Windows 平台下，此处的 `MODEL=./chatglm3-ggml.bin` 为设置模型路径为环境变量，需使用
+```sh
+set MODEL=./chatglm-ggml.bin
+uvicorn chatglm_cpp.openai_api:app --host 127.0.0.1 --port 6006
+```
+如果报 `ModuleNotFoundError: No module named 'chatglm_cpp._C'` 错误，是因为在导入该包时，有两个 `init` 文件互相冲突了，此时只要再切换到 `./chatglm.cpp/chatglm_cpp` 路径下，重新运行
+```sh
+set MODEL=../chatglm-ggml.bin
+uvicorn openai_api:app --host 127.0.0.1 --port 6006
+```
+即可拉起服务（确保所需的其它模块全部已安装）
 
 使用 `curl` 命令测试你的端点：
 ```sh
@@ -153,7 +214,9 @@ curl http://127.0.0.1:6006/v1/chat/completions -H 'Content-Type: application/jso
 '你好👋！我是人工智能助手 ChatGLM3-6B，很高兴见到你，欢迎问我任何问题。'
 ```
 
-至此，可利用 `RemoteLLM` 类，通过本地 `6006` 端口与你的模型聊天。
+至此，可利用 `RemoteLLM` 类，通过本地 `6006` 端口与你的模型聊天，参考 [RemoteLLM调用](https://github.com/MaLaNg116/NLP-Homework?tab=readme-ov-file#%E8%B0%83%E7%94%A8remotellm)
+
+<img src="../resource/6.png"></img>
 
 如果要使用流式回复，参考以下脚本：
 ```sh
