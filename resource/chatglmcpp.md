@@ -233,6 +233,8 @@ OPENAI_BASE_URL=http://127.0.0.1:6006/v1 python3 examples/openai_client.py --too
 
 ### :books: 模型量化
 
+:exclamation: 量化要求本地有至少大于 32G 的内存，请确保你的机器满足要求。
+
 安装用于加载和量化Hugging Face模型的必要包：
 ```sh
 python3 -m pip install -U pip
