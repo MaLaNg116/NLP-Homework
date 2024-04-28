@@ -4,7 +4,7 @@ import json
 from applications.KE1_prompt import KNOWLEDGE_EXTRACT_GENERAL_PROMPT_PATTERN, KNOWLEDGE_EXTRACT_METRICS
 from applications.tmp_utils import set_logger
 from remote import RemoteLLMs
-from remote.ChatGPT import ChatGPTLLM
+from remote.ChatGPT_Stream import ChatGPTLLM
 from remote.ChatGLM3 import ChatGLMLLM
 
 
@@ -75,7 +75,7 @@ class KE1Agent:
             "{{In-Context Examples}}": in_context_prompt
         }
 
-    def extract_triads(self, case_data):
+    def extract_triads(self, case_data, use_stream=False, max_length=100, temperature=0.5, top_p=1.0):
         llm_model = self.llm_model
         repeat_times = -1
 
@@ -86,15 +86,26 @@ class KE1Agent:
             # 首先构造prompt
             prompt = llm_model.fit_case(pattern=self.prompt_pattern, data=case_data, meta_dict=self.meta_dict)
             contexts = llm_model.create_prompt(prompt)
-            results = llm_model.request_llm(contexts, repeat_times=repeat_times)
 
-            if results is not None and results[-1]['role'] == 'assistant':
-                return prompt, results[-1]['content']
+            if not use_stream:
+                # 非流式请求
+                results = llm_model.request_llm(contexts, repeat_times=repeat_times, use_stream=use_stream,
+                                                max_length=max_length, temperature=temperature, top_p=top_p)
+
+                if results is not None and results[-1]['role'] == 'assistant':
+                    return prompt, results[-1]['content']
+            else:
+                # 流式请求
+                response = llm_model.request_llm(contexts, repeat_times=repeat_times, use_stream=use_stream,
+                                                 max_length=max_length, temperature=temperature, top_p=top_p)
+                if response:
+                    return response
 
         return None
 
 
-def KE1_prompt(src_text: str, model: str = "GPT-3.5", language: str = "Chinese"):
+def KE1_prompt(src_text: str, model: str = "GPT-3.5", language: str = "Chinese", stream: bool = False, max_length=100,
+               temperature=0.5, top_p=1.0):
     parser = argparse.ArgumentParser()
 
     if model == "GPT-3.5":
@@ -153,15 +164,23 @@ def KE1_prompt(src_text: str, model: str = "GPT-3.5", language: str = "Chinese")
     ]
 
     score_agent = KE1Agent(logger, chat_agent, task_name, result_pattern,
-                               language=language, text_term=text_term,
-                               more_guidance=more_guidance, in_context_examples=in_context_examples)
+                           language=language, text_term=text_term,
+                           more_guidance=more_guidance, in_context_examples=in_context_examples)
     data = {
         "{{TEXT_VALUE}}": src_text
     }
-    prompt, res = score_agent.extract_triads(data)
-    res = json.loads(res)["Triad"]
+    if not stream:
+        # 非流式请求
+        prompt, res = score_agent.extract_triads(data, use_stream=stream, max_length=max_length,
+                                                 temperature=temperature, top_p=top_p)
 
-    return prompt, res
+        return prompt, res
+    else:
+        # 流式请求
+        response = score_agent.extract_triads(data, use_stream=stream, max_length=max_length, temperature=temperature,
+                                              top_p=top_p)
+
+        return response
 
 
 if __name__ == '__main__':

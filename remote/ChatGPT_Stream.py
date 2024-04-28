@@ -35,22 +35,31 @@ class ChatGPTLLM(RemoteLLMs):
         )
         return context
 
-    def request_llm(self, context, seed=1234, sleep_time=1, repeat_times=0):
+    def request_llm(self, context, seed=1234, sleep_time=1, repeat_times=0, use_stream=False, max_length=100,
+                    temperature=0.5, top_p=1.0):
         while True:
             try:
+                print(max_length)
                 response = self.client.chat.completions.create(
                     model=self.model,
                     messages=context,
-                    stream=True,
-                    seed=seed+repeat_times
+                    stream=use_stream,
+                    max_tokens=max_length,
+                    temperature=temperature,
+                    top_p=top_p,
+                    seed=seed + repeat_times,
+                    n=1
                 )
-                context.append(
-                    {
-                        'role': response.choices[0].message.role,
-                        'content': response.choices[0].message.content
-                    }
-                )
-                return context
+                if not use_stream:
+                    context.append(
+                        {
+                            'role': response.choices[0].message.role,
+                            'content': response.choices[0].message.content
+                        }
+                    )
+                    return context
+                else:
+                    return response
             except openai.RateLimitError as e:
                 logging.error(str(e))
                 raise e
@@ -62,6 +71,7 @@ class ChatGPTLLM(RemoteLLMs):
                 logging.error(f"An unexpected error occurred: {str(e)}")
                 raise e
             time.sleep(sleep_time)
+
 
 if __name__ == '__main__':
     # https://platform.openai.com/docs/api-reference

@@ -41,7 +41,8 @@ class RemoteLLMs:
     def create_prompt(self, history, current_query):
         pass
 
-    def request_llm(self, context, seed=1234, sleep_time=1, repeat_times=0):
+    def request_llm(self, context, seed=1234, sleep_time=1, repeat_times=0, use_stream=False, max_length=100,
+                    temperature=0.5, top_p=1.0):
         pass
 
     def fit_case(self, pattern: str, data: dict, meta_dict: dict = None):

@@ -200,3 +200,25 @@ accelerate: `pip install accelerate`，然后即可正常加载模型。
 <br/>
 
 ### 更多部署详细方式请参考 [ChatGLM3官方仓库](https://github.com/THUDM/ChatGLM3)
+
+## 应用开发
+
+### web部署
+使用 `cd` 命令切换到本项目目录的 `ChatGLM_Web` 文件夹下，确保您已预先安装好 `node.js` 环境，在 `ChatGLM_Web` 目录下打开 `Terminal` ，运行
+```sh
+npm install
+```
+安装 web dwmo 运行需要的依赖项，之后在 `Terminal` 中运行
+```sh
+npm run dev
+```
+用以在开发环境下运行 web demo，此时你应该可以在 [http://localhost:5173/
+](http://localhost:5173/) 端口上查看挂载完毕的 web demo。
+
+目前 web demo 已实现：
++ **Prompt封装**：对已定义任务无需额外编写 Prompt，但目前封装任务的效果差强人意，后续考虑会逐渐增加任务数量并提高任务质量。
++ **模型选择**：可供用户选择 GPT-3.5-turbo 或 GLM-3 两种模型，后续可添加模型。
++ **流式输出**：已完成大模型流式输出的封装，可自定义是否使用流式。
++ **参数选择**：用户可对模型输出结果定制，自定义 max_length、top_p、temperature 参数。
+
+![web_demo](./resource/7.png)
