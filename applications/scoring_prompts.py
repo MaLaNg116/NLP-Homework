@@ -1,6 +1,3 @@
-
-
-
 TEXT_EVAL_METRICS = {
     "Fluency": """ Fluency: The fluency of the '{{TGT}}'. """,
     "Relevance": """ Relevance: The semantic consistency and relevance between '{{SRC}}' and '{{TGT}}'. """,

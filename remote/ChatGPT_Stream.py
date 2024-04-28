@@ -41,7 +41,7 @@ class ChatGPTLLM(RemoteLLMs):
                 response = self.client.chat.completions.create(
                     model=self.model,
                     messages=context,
-                    stream=False,
+                    stream=True,
                     seed=seed+repeat_times
                 )
                 context.append(

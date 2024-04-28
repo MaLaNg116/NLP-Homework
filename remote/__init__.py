@@ -1,6 +1,6 @@
 import json
 import os
-from dotenv import load_dotenv
+from dotenv import load_dotenv, find_dotenv
 
 
 class RemoteLLMs:
@@ -15,7 +15,7 @@ class RemoteLLMs:
 
     def __load_args(self, config_path):
         # 首先读取Config
-        load_dotenv("./configs/API.env")
+        load_dotenv(find_dotenv("./configs/API.env"))
         self.args = json.load(open(config_path))
         # 读取环境变量
         if self.args["model"] == "gpt-3.5-turbo":

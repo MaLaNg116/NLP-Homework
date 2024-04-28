@@ -1,10 +1,10 @@
 import argparse
 import json
 
-from llms.applications.scoring_prompts import TEXT_EVAL_GENERAL_PROMPT_PATTERN, TEXT_EVAL_METRICS
-from llms.applications.tmp_utils import set_logger
-from llms.remote import RemoteLLMs
-from llms.remote.ChatGPT import ChatGPTLLM
+from applications.scoring_prompts import TEXT_EVAL_GENERAL_PROMPT_PATTERN, TEXT_EVAL_METRICS
+from applications.tmp_utils import set_logger
+from remote import RemoteLLMs
+from remote.ChatGPT import ChatGPTLLM
 
 
 class ScoringAgent:
@@ -244,8 +244,8 @@ if __name__ == '__main__':
                                language=language, src_term=src_term, tgt_term=tgt_term,
                                more_guidance=more_guidance, in_context_examples=in_context_examples)
     data = {
-        "{{SRC_VALUE}}": "我觉得你是个好人。 我好喜欢你",
-        "{{TGT_VALUE}}": "好好学习 天台呢向上。",
+        "{{SRC_VALUE}}": "我觉得你是个好人。我好喜欢你",
+        "{{TGT_VALUE}}": "不准喜欢我，我是个坏人。",
     }
     prompt, res = score_agent.judge_a_case(data)
     print("本次请求的Prompt是", prompt)

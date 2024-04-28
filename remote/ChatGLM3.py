@@ -1,4 +1,3 @@
-import json
 import logging
 import argparse
 import openai
@@ -16,7 +15,7 @@ def read_args():
     return args
 
 
-class ChatGPTLLM(RemoteLLMs):
+class ChatGLMLLM(RemoteLLMs):
     def init_local_client(self):
         try:
             self.model = self.args['model']
@@ -67,5 +66,5 @@ class ChatGPTLLM(RemoteLLMs):
 if __name__ == '__main__':
     # https://platform.openai.com/docs/api-reference
     args = read_args()
-    chat_gpt = ChatGPTLLM(args.config_path)
+    chat_gpt = ChatGLMLLM(args.config_path)
     chat_gpt.interactive_dialogue()
