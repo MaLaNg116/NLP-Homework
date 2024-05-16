@@ -39,7 +39,6 @@ class ChatGPTLLM(RemoteLLMs):
                     temperature=0.5, top_p=1.0):
         while True:
             try:
-                print(max_length)
                 response = self.client.chat.completions.create(
                     model=self.model,
                     messages=context,

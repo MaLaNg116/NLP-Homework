@@ -8,6 +8,10 @@ import {storeToRefs} from "pinia";
 import axios from "axios";
 import {fetchEventSource} from '@microsoft/fetch-event-source';
 
+// 定义markdown转换器
+import showdown from "showdown"
+let converter = new showdown.Converter();
+
 const URL = "http://127.0.0.1:5000"
 
 const { use_stream, language, max_length, top_p, temperature, model, task } = storeToRefs(useConfigStore());
@@ -42,7 +46,7 @@ async function triadsMiningNoStream() {
         "top_p": top_p.value
       }
   ).then((res) => {
-    chatStore.increment(res.data.data.result, 'good-bro');
+    chatStore.increment(converter.makeHtml(res.data.data.result), 'good-bro');
     chatStore.loading()
   }).catch((err) => {
     console.log(err);
@@ -57,6 +61,7 @@ async function triadsMiningNoStream() {
 // 三元组挖掘函数（使用流）
 function triadsMiningStream() {
   chatStore.increment("", "good-bro")
+  let tmp_response = ''
   fetchEventSource(URL + `/ke1`, {
     method: 'POST',
     headers: {
@@ -74,8 +79,70 @@ function triadsMiningStream() {
     }),
     onmessage(event) {
       //服务返回的数据
-      console.log(event.data)
-      chatStore.update_last(event.data)
+      console.log(event.data.replace('<br>', '\n'))
+      tmp_response += event.data.replace('<br>', '\n')
+      chatStore.update_last(converter.makeHtml(tmp_response))
+    },
+    onerror(event) {
+      // 服务异常
+      console.log("服务异常", event)
+      chatStore.set_loadingFalse()
+    },
+    onclose() {
+      // 服务关闭
+      console.log("服务关闭");
+      chatStore.set_loadingFalse()
+    },
+  })
+}
+
+// 交互聊天非流式
+async function interactiveDialogueNoStream() {
+  await axios.post(URL + '/interactive',
+      {
+        "src_text": content.value,
+        "model": model.value,
+        "stream": use_stream.value,
+        "max_length": max_length.value,
+        "temperature": temperature.value,
+        "top_p": top_p.value
+      }
+  ).then((res) => {
+    chatStore.increment(converter.makeHtml(res.data.data.result), 'good-bro');
+    chatStore.loading()
+  }).catch((err) => {
+    console.log(err);
+    ElMessage({
+      message: 'Oops! Something went wrong.',
+      type: 'error',
+    })
+    chatStore.loading()
+  })
+}
+
+// 交互聊天流式
+function interactiveDialogueStream() {
+  chatStore.increment("", "good-bro")
+  let tmp_response = ''
+  fetchEventSource(URL + `/interactive`, {
+    method: 'POST',
+    headers: {
+      "Content-Type": "application/json"
+    },
+    //请求体，用于给后台的数据
+    body: JSON.stringify({
+      "src_text": content.value,
+      "model": model.value,
+      "stream": use_stream.value,
+      "max_length": max_length.value,
+      "temperature": temperature.value,
+      "top_p": top_p.value
+    }),
+    onmessage(event) {
+      //服务返回的数据
+      console.log(event.data.replace('<br>', '\n'))
+      tmp_response += event.data.replace('<br>', '\n')
+      chatStore.update_last(converter.makeHtml(tmp_response))
     },
     onerror(event) {
       // 服务异常
@@ -97,10 +164,14 @@ async function handleSend() {
     isValue.value = false;
     chatStore.increment(content.value, 'me');
     chatStore.loading()
+    // 判断任务类型
+    console.log(task.value)
+    let my_task_stream = task.value === 'ke1' ? triadsMiningStream : interactiveDialogueStream
+    let my_task_no_stream = task.value === 'ke1' ? triadsMiningNoStream : interactiveDialogueNoStream
     if (use_stream.value === false) {
-      await triadsMiningNoStream()
+      await my_task_no_stream()
     } else {
-      await triadsMiningStream()
+      await my_task_stream()
     }
   } else {
     ElMessage({

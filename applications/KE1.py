@@ -27,12 +27,13 @@ class KE1Agent:
         self.logger = logger
         self.llm_model = llm_model
         self.prompt_pattern = KNOWLEDGE_EXTRACT_GENERAL_PROMPT_PATTERN
-        self.result_pattern = metrics
+        self.result_pattern = metrics.copy()
 
         # 处理额外的输入
         more_task_definition = '\n'.join(more_task_definition)
 
-        output_pattern = json.dumps(metrics, ensure_ascii=False, indent=4)
+        self.result_pattern['Triad'] = [["Head Entity", "Relationship", "Tail Entity"]]
+        output_pattern = json.dumps(self.result_pattern, ensure_ascii=False, indent=4)
 
         # In-Context Examples 的设置
         if len(in_context_examples) > 0:
@@ -47,7 +48,7 @@ class KE1Agent:
         # 是否有更多需要补充的指南
         tmp = []
         for idx, guidance in enumerate(more_guidance):
-            tmp.append('%s. %s' % (idx + 4, guidance))
+            tmp.append('%s. %s' % (idx + 9, guidance))
         more_guidance = '\n'.join(tmp)
 
         # 根据评价指标设置评价的标准
@@ -128,7 +129,7 @@ def KE1_prompt(src_text: str, model: str = "GPT-3.5", language: str = "Chinese",
     logger = set_logger("tmp.log")
 
     # 定义参数
-    task_name = "Triad Extraction for General Knowledge"
+    task_name = "Common Sense Knowledge Triple Extraction"
     text_term = "Source Text"
 
     result_pattern = {
@@ -186,7 +187,8 @@ def KE1_prompt(src_text: str, model: str = "GPT-3.5", language: str = "Chinese",
 if __name__ == '__main__':
     # https://platform.openai.com/docs/api-reference
 
-    src_text = "习近平说，今年是中美建交45周年。45" \
-               "年的中美关系历经风风雨雨，给了我们不少重要启示：两国应该做伙伴，而不是当对手；应该彼此成就，而不是互相伤害；应该求同存异，而不是恶性竞争；应该言必信、行必果，而不是说一套、做一套。我提出相互尊重、和平共处、合作共赢三条大原则，既是过去经验的总结，也是走向未来的指引。"
+    src_text = "1、菠萝属于什么类水果?复果类2、彩虹的顶部是什么颜色的?红3、穿山是用什么捕食的?舌头4、从北半球看，凸出、发光的一面朝左的弯月叫：残月5、从哪个部位可以知道马的年龄?牙齿6、催化剂在化学反应中的作用是：改变化学反应速度7、大熊猫和小熊猫是同一科的吗?不是8、大叶黄杨和小叶黄杨是同一种树吗?不是9、氮在地球上主要以什么形式存在?氮气10、地壳中含量最少的元素是：砹11、地球上的风由于什么原因不能笔直流动?地球自转12、地球有近日点、远日点，我们北半球冬季时地球处于：近日点13、地球与太阳系的其它行星不会相撞，是因为什么原因?太阳的引力作用14、第一个遗传密码在哪年被翻译出? 1961年15、第一架望远镜是由谁发明?伽利略"
 
-    KE1_prompt(src_text, "GPT-3.5", "Chinese")
+    prompt, res = KE1_prompt(src_text, max_length=40000)
+    print("本次请求的Prompt是", prompt)
+    print("本次请求的结果是", res)

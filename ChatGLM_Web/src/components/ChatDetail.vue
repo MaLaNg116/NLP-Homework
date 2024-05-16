@@ -13,13 +13,11 @@ const size = ref(43)
   <div v-if="isGoodBro" class="good-bro">
     <el-avatar :size="size" :fit='fit' :src="GPT_Avatar" shape='square'>
     </el-avatar>
-    <div class="chat-content">
-      {{data.content}}
+    <div class="chat-content" v-hljs v-html="data.content">
     </div>
   </div>
   <div v-if="!isGoodBro" class="me">
-    <div class="chat-content">
-      {{data.content}}
+    <div class="chat-content" v-hljs v-html="data.content">
     </div>
     <el-avatar :size="size" :fit='fit' :src="me_Avatar" shape='square'>
     </el-avatar>

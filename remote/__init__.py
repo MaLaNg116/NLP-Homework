@@ -30,6 +30,8 @@ class RemoteLLMs:
         self.__load_args(config_path)
         self.max_retries = self.args.get("max_retries", 5)
         self.client = None
+        # 初始化聊天记录
+        self.contexts = []
         for idx in range(self.max_retries):
             model = self.init_local_client()
             if model is not None:
@@ -48,7 +50,7 @@ class RemoteLLMs:
     def fit_case(self, pattern: str, data: dict, meta_dict: dict = None):
 
         if meta_dict is not None:
-            for k,v in meta_dict.items():
+            for k, v in meta_dict.items():
                 pattern = pattern.replace(k, str(v))
 
         for k, v in data.items():
@@ -58,21 +60,18 @@ class RemoteLLMs:
         assert '}}' not in pattern, pattern
         return pattern
 
-
-    def interactive_dialogue(self):
+    def interactive_dialogue(self, content: str, use_stream=False, max_length=100,
+                             temperature=0.5, top_p=1.0):
         """
         进行交互式的对话，进行模型检查
         :return:
         """
-        contexts = []
-        while True:
-            current_query = input("请输入当前你的对话(输入'CLEAN'清除上下文，'END'离开对话)：")
-            if current_query == "CLEAN":
-                contexts = []
-                print("已经清除上下文")
-                continue
-            elif current_query == "END":
-                return
-            contexts = self.create_prompt(current_query, contexts)
-            results = self.request_llm(contexts)
-            print("%s\t%s" % (results[-1]['role'], results[-1]['content']))
+        current_query = content
+        if current_query == "CLEAN":
+            self.contexts = []
+            print("已经清除上下文")
+        self.contexts = self.create_prompt(current_query, self.contexts)
+        results = self.request_llm(self.contexts, use_stream=use_stream, max_length=max_length, temperature=temperature,
+                                   top_p=top_p)
+
+        return results

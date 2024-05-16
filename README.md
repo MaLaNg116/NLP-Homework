@@ -203,6 +203,40 @@ accelerate: `pip install accelerate`，然后即可正常加载模型。
 
 ## 应用开发
 
+### 服务接口拉起
+
+#### 通用聊天与 General Knowledge Triads Extraction 中间件 
+使用 `cd` 命令切换到本项目目录的 `applications` 文件夹下，确保您已经通过 `pip install -r requirements.txt` 安装好了所需的依赖项，之后在 `Terminal` 中运行
+```sh
+python app.py
+```
+即可在本地 `5000` 端口上拉起Prompt构造服务，总共包含以下接口：
++ **/interactive**：接收 `POST` 请求，配置模型参数，返回模型输出结果，交互式的与大模型对话。
++ **/ke1**：接收 `POST` 请求，配置模型参数，对用户提供内容进行常识知识三元组提取任务的 Prompt 封装，并返回提取结果。
+
+#### General Knowledge Triads Extraction 文件批处理中间件
+使用 `cd` 命令切换到本项目目录的 `applications/BatchHandler` 文件夹下，确保您已经通过 `pip install -r requirements.txt` 安装好了所需的依赖项，之后在 `Terminal` 中运行
+```sh
+python batch_handler.py
+```
+即可在本地 `5001` 端口上拉起文件批处理服务，总共包含以下接口：
+##### 用于单文件批数据处理的接口
++ **/upload**：接收 `POST` 请求，由前端上传固定格式的 json 文件，由接口解析后，为 json 文件创建唯一的 uuid，返回给前端，前端可通过该 uuid 请求任务完成的进度和结果。同时为 json 文件中的各文本段创建各自的 `任务uuid`，前端无法得到，仅用于后端状态管理。
++ **/start**：接收 `GET` 请求，由前端传入 `任务uuid`，开始多进程的进行对应 json 文件的常识知识三元组提取任务。同时监控各文件任务下的子任务状态，存储在 `status.json` 状态管理文件中。若文件中的子任务未能全部成功完成，接口会返回完成进度给前端；若全部完成，接口会以 json 格式返回任务结果给前端。
+##### 用于批文件批数据处理的接口（待开发）
++ **/restart_all (尚未开发完成，且需与 `pause_all` 功能接口对应)** ：用于启动所有已上传的 json 文件的任务（错误队列优先），若任务已经完成，则不会重复执行。
+
+**且由于开发时间和开发成本的问题，所有的批处理接口只能通过 `Terminal` 或 `接口调用工具` 的形式获取功能，未开发相应的前端功能模块，敬请谅解** 
+
+##### 部分批处理结果示例
+<div style="display: flex; justify-content: space-between; flex-wrap: wrap; row-gap: 20px">
+<img alt="上传接口示例" src="./resource/8.png" style="width:48%">
+<img alt="启动任务接口示例" src="./resource/9.png" style="width:48%">
+<img alt="状态管理器" src="./resource/10.png" style="width:48%">
+<img alt="请求结果示例" src="./resource/11.png" style="width:48%">
+</div>
+<img alt="日志示例" src="./resource/12.png" style="width:98%; margin-top: 20px">
+
 ### web部署
 使用 `cd` 命令切换到本项目目录的 `ChatGLM_Web` 文件夹下，确保您已预先安装好 `node.js` 环境，在 `ChatGLM_Web` 目录下打开 `Terminal` ，运行
 ```sh
@@ -219,6 +253,10 @@ npm run dev
 + **Prompt封装**：对已定义任务无需额外编写 Prompt，但目前封装任务的效果差强人意，后续考虑会逐渐增加任务数量并提高任务质量。
 + **模型选择**：可供用户选择 GPT-3.5-turbo 或 GLM-3 两种模型，后续可添加模型。
 + **流式输出**：已完成大模型流式输出的封装，可自定义是否使用流式。
-+ **参数选择**：用户可对模型输出结果定制，自定义 max_length、top_p、temperature 参数。
++ **参数选择**：用户可对模型输出结果定制，自定义 max_length、top_p、temperature 参数。  
+
+**新增**
++ **结果展示**：针对 General Knowledge Triads Extraction 任务，通过 `markdown.js` 解析和 `highlight.js` 高亮插件实现了三元组结果的高亮展示。
++ **结果导出**：若对话主题为 General Knowledge Triads Extraction 任务，用户可通过点击 `Export` 按钮将结果导出为 `.json` 文件。
 
 ![web_demo](./resource/7.png)

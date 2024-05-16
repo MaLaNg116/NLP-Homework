@@ -14,17 +14,14 @@ The output format should follow the [Output Format].
 
 [Guidance]
 You should strictly follow my guidance:
-1. Extract the triads of general life knowledge from the given text, \
-each of which should be in the format (Head Entity, Relationship, Tail Entity).
-2. Text types are not restricted. \
-Ensure that the extracted triples are concise and cover a wide range of common sense knowledge.
-3. The number of extracted triples should be as large as possible and \
-the length of the extracted text should be as concise and general as possible.
-4. Contextual information can be taken into account when extracting knowledge triples and \
-there is no need to include additional explanatory text or examples in the output.
-5. There is no clear preference for the source of the text.
+1. Extract the triads of general life knowledge from the given text, each of which should be in the format (Head Entity, Relationship, Tail Entity).
+2. If any of the elements of (Head Entity, Relationship, Tail Entity) is null, the triad is invalid and is not included in the final result.
+3. Text types are not restricted. Ensure that the extracted triples are concise and cover a wide range of common sense knowledge.
+4. The number of extracted triples should be as large as possible and the length of the extracted text should be as concise and general as possible.
+5. Contextual information can be taken into account when extracting knowledge triples and there is no need to include additional explanatory text or examples in the output.
 6. When dealing with complex sentences or fuzzy relationships, please provide a most likely triad.
 7. You should strictly follow the given output format and can't output other information.
+8. Returns the final result to me in the form of a json code block in markdown format, while avoiding any errors that might prevent it from being read successfully.
 {{MORE_GUIDANCE}}
 If you break my guidance, you will be penalized.
 
@@ -34,10 +31,10 @@ If you break my guidance, you will be penalized.
 {{In-Context Examples}}
 
 [Output Format]
-Your output should strictly follow this format and can be directly decoded by Python:
-'''
+Your output should strictly follow this format and can be directly decoded by Markdown:
+```json
 {{Output}}
-'''
+```
 
 [Input]
 '''

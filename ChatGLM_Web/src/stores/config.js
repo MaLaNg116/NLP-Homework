@@ -18,7 +18,7 @@ export const useConfigStore = defineStore('configs', () => {
             label: 'ChatGLM3-6b',
         }
     ])
-    const task = ref('Triads Mining')
+    const task = ref('ke1')
     const task_list = ref([
         {
             value: 'dialogue_scoring',
@@ -27,6 +27,10 @@ export const useConfigStore = defineStore('configs', () => {
         {
             value: 'ke1',
             label: 'Triads Mining',
+        },
+        {
+            value: 'interaction',
+            label: 'Interactive Chat',
         }
     ])
 
